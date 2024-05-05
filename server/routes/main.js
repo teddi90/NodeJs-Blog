@@ -13,7 +13,7 @@ router.get('', async (req, res) => {
         let perPage = 10;
         let page = req.query.page || 1;
 
-        const data = await Post.aggregate([{$sort: {createdAt: -1}}])
+        const data = await Post.aggregate([{ $sort: { createdAt: -1 } }])
             .skip(perPage * page - perPage)
             .limit(perPage)
             .exec();
@@ -27,7 +27,8 @@ router.get('', async (req, res) => {
             locals,
             data,
             current: page,
-            nextPage: hasNextPage ? nextPage : null
+            nextPage: hasNextPage ? nextPage : null,
+            currentRoute: '/'
         });
     } catch (err) {
         console.log(err)
@@ -37,43 +38,47 @@ router.get('', async (req, res) => {
 });
 
 // GET Post :id
-router.get('/post/:id',async (req,res)=>{
+router.get('/post/:id', async (req, res) => {
     try {
 
-        let slug=req.params.id;
+        let slug = req.params.id;
 
-        const data= await Post.findById({_id:slug});
+        const data = await Post.findById({ _id: slug });
         const locals = {
             title: data.title,
             description: 'Simple Blog created with NodeJs, Express & MongoDb.'
         };
-        res.render('post',{locals,data})
+        res.render('post', {
+            locals,
+            data,
+            currentRoute: `/post/${slug}`
+        })
 
-    }catch (err){
+    } catch (err) {
         console.log(err)
     }
 });
 
 // POST Post -searchTerm
-router.post('/search',async (req,res)=>{
+router.post('/search', async (req, res) => {
 
-    try{
+    try {
         const locals = {
             title: 'Search',
             description: 'Simple Blog created with NodeJs, Express & MongoDb.'
         };
         let searchTerm = req.body.searchTerm;
-        const searchNotSpecialChar=searchTerm.replace(/[^a-zA-Z0-9]/g,"")
-        const data=await Post.find({
-            $or:[
-                {title:{$regex:new RegExp(searchNotSpecialChar,'i')}},
-                {body:{$regex:new RegExp(searchNotSpecialChar,'i')}}
+        const searchNotSpecialChar = searchTerm.replace(/[^a-zA-Z0-9]/g, "")
+        const data = await Post.find({
+            $or: [
+                { title: { $regex: new RegExp(searchNotSpecialChar, 'i') } },
+                { body: { $regex: new RegExp(searchNotSpecialChar, 'i') } }
 
             ]
         });
 
-        res.render('search',{locals,data})
-    }catch (err){
+        res.render('search', { locals, data })
+    } catch (err) {
         console.log(err)
     }
 })
@@ -83,7 +88,10 @@ router.get('/about', (req, res) => {
         title: "about",
         description: 'about description'
     }
-    res.render("about", {locals});
+    res.render("about", {
+        locals,
+        currentRoute: '/about'
+    });
 });
 
 router.get('/contact', (req, res) => {
@@ -91,7 +99,7 @@ router.get('/contact', (req, res) => {
         title: "contact",
         description: 'contact description'
     }
-    res.render("contact", {locals});
+    res.render("contact", { locals, currentRoute: '/contact' });
 });
 
 module.exports = router;
